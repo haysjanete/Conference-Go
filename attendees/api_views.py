@@ -23,7 +23,14 @@ def api_list_attendees(request, conference_id):
         ]
     }
     """
-    return JsonResponse({})
+    attendees = [
+        {
+            "name": a.name,
+            "href": a.get_api_url(),
+        }
+        for a in Attendee.objects.filter(conference=conference_id)
+    ]
+    return JsonResponse({"attendees": attendees})
 
 
 def api_show_attendee(request, pk):
@@ -46,4 +53,16 @@ def api_show_attendee(request, pk):
         }
     }
     """
-    return JsonResponse({})
+    conference = Attendee.objects.get(id=pk)
+    return JsonResponse(
+        {
+            "email": Attendee.email,
+            "name": Attendee.name,
+            "company_name": Attendee.company_name,
+            "created": Attendee.created,
+            "conference": {
+                "name": conference.location.name,
+                "href": conference.location.get_api_url(),
+            },
+        }
+    )

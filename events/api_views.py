@@ -97,7 +97,16 @@ def api_list_locations(request):
         ]
     }
     """
-    return JsonResponse({})
+    response = []
+    conferences = Conference.objects.all()
+    for conference in conferences:
+        response.append(
+            {
+                "name": conference.location.name,
+                "href": conference.get_api_url(),
+            }
+        )
+    return JsonResponse({"conferences": response})
 
 
 def api_show_location(request, pk):
@@ -117,4 +126,14 @@ def api_show_location(request, pk):
         "state": the two-letter abbreviation for the state,
     }
     """
-    return JsonResponse({})
+    conference = Conference.objects.get(id=pk)
+    return JsonResponse(
+        {
+            "name": conference.location.name,
+            "city": conference.location.city,
+            "room_count": conference.location.room_count,
+            "created": conference.location.created,
+            "updated": conference.location.updated,
+            "state": conference.location.state,
+        }
+    )
