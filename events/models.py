@@ -46,8 +46,9 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ("name",)  # Default ordering for Location
+
+class Meta:
+    ordering = ("name",)  # Default ordering for Location
 
 
 class Conference(models.Model):

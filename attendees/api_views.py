@@ -53,16 +53,16 @@ def api_show_attendee(request, pk):
         }
     }
     """
-    conference = Attendee.objects.get(id=pk)
+    attendee = Attendee.objects.get(id=pk)
     return JsonResponse(
         {
-            "email": Attendee.email,
-            "name": Attendee.name,
-            "company_name": Attendee.company_name,
-            "created": Attendee.created,
+            "email": attendee.email,
+            "name": attendee.name,
+            "company_name": attendee.company_name,
+            "created": attendee.created,
             "conference": {
-                "name": conference.location.name,
-                "href": conference.location.get_api_url(),
+                "name": attendee.conference.name,
+                "href": attendee.conference.get_api_url(),
             },
         }
     )

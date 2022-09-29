@@ -1,6 +1,18 @@
 from django.http import JsonResponse
+from common.json import ModelEncoder
+from .models import Conference, Location, State
+from django.views.decorators.http import require_http_methods
+import json
 
-from .models import Conference, Location
+
+class LocationListEncoder(ModelEncoder):
+    model = Location
+    properties = ["name"]
+
+
+class ConferenceListEncoder(ModelEncoder):
+    model = Conference
+    properties = ["name"]
 
 
 def api_list_conferences(request):
@@ -22,16 +34,29 @@ def api_list_conferences(request):
         ]
     }
     """
-    response = []
     conferences = Conference.objects.all()
-    for conference in conferences:
-        response.append(
-            {
-                "name": conference.name,
-                "href": conference.get_api_url(),
-            }
-        )
-    return JsonResponse({"conferences": response})
+    return JsonResponse(
+        {"conferences": conferences},
+        encoder=ConferenceListEncoder,
+    )
+
+
+class ConferenceDetailEncoder(ModelEncoder):
+    model = Conference
+    properties = [
+        "name",
+        "description",
+        "max_presentations",
+        "max_attendees",
+        "starts",
+        "ends",
+        "created",
+        "updated",
+        "location",
+    ]
+    encoders = {
+        "location": LocationListEncoder(),
+    }
 
 
 def api_show_conference(request, pk):
@@ -61,23 +86,21 @@ def api_show_conference(request, pk):
     """
     conference = Conference.objects.get(id=pk)
     return JsonResponse(
-        {
-            "name": conference.name,
-            "starts": conference.starts,
-            "ends": conference.ends,
-            "description": conference.description,
-            "created": conference.created,
-            "updated": conference.updated,
-            "max_presentations": conference.max_presentations,
-            "max_attendees": conference.max_attendees,
-            "location": {
-                "name": conference.location.name,
-                "href": conference.location.get_api_url(),
-            },
-        }
+        conference,
+        safe=False,
+        encoder=ConferenceDetailEncoder,
     )
 
 
+class LocationListEncoder(ModelEncoder):
+    model = Location
+    properties = [
+        "name",
+        "href",
+    ]
+
+
+@require_http_methods(["GET", "POST"])
 def api_list_locations(request):
     """
     Lists the location names and the link to the location.
@@ -97,18 +120,39 @@ def api_list_locations(request):
         ]
     }
     """
-    response = []
-    conferences = Conference.objects.all()
-    for conference in conferences:
-        response.append(
-            {
-                "name": conference.location.name,
-                "href": conference.get_api_url(),
-            }
+    if request.method == "GET":
+        locations = Location.objects.all()
+        return JsonResponse(
+            {"location": locations},
+            encoder=LocationListEncoder,
         )
-    return JsonResponse({"conferences": response})
+    else:
+        content = json.loads(request.body)
+        try:
+            state = State.objects.get(abbreviation=content["state"])
+            content["state"] = state
+        except State.DoesNotExist:
+            return JsonResponse(
+                {"message": "Invalid state abbreviation"},
+                status=400,
+            )
 
 
+class LocationDetailEncoder(ModelEncoder):
+    model = Location
+    properties = [
+        "name",
+        "city",
+        "room_count",
+        "created",
+        "updated",
+    ]
+
+    def get_extra_data(self, o):
+        return {"state": o.state.abbreviation}
+
+
+@require_http_methods(["DELETE", "GET", "PUT"])
 def api_show_location(request, pk):
     """
     Returns the details for the Location model specified
@@ -126,14 +170,31 @@ def api_show_location(request, pk):
         "state": the two-letter abbreviation for the state,
     }
     """
-    conference = Conference.objects.get(id=pk)
-    return JsonResponse(
-        {
-            "name": conference.location.name,
-            "city": conference.location.city,
-            "room_count": conference.location.room_count,
-            "created": conference.location.created,
-            "updated": conference.location.updated,
-            "state": conference.location.state,
-        }
-    )
+    if request.method == "GET":
+        location = Location.objects.get(id=pk)
+        return JsonResponse(
+            location,
+            encoder=LocationDetailEncoder,
+            safe=False,
+        )
+    elif request.method == "DELETE":
+        count, _ = Location.objects.filter(id=pk).delete()
+        return JsonResponse({"deleted": count > 0})
+    else:
+        content = json.loads(request.body)
+        try:
+            if "state" in content:
+                state = State.objects.get(abbreviation=content["state"])
+                content["state"] = state
+        except State.DoesNotExist:
+            return JsonResponse(
+                {"message": "Invalid state abbreviation"},
+                status=400,
+            )
+        Location.objects.filter(id=pk).update(**content)
+        location = Location.objects.get(id=pk)
+        return JsonResponse(
+            location,
+            encoder=LocationDetailEncoder,
+            safe=False,
+        )

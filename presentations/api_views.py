@@ -1,6 +1,6 @@
 from django.http import JsonResponse
-
 from .models import Presentation
+from common.json import ModelEncoder
 
 
 def api_list_presentations(request, conference_id):
@@ -36,7 +36,25 @@ def api_list_presentations(request, conference_id):
     return JsonResponse({"presentations": presentations})
 
 
+class PresentationDetailEncoder(ModelEncoder):
+    model = Presentation
+    properties = [
+        "presenter_name",
+        "company_name",
+        "presenter_email",
+        "title",
+        "synopsis",
+        "created",
+    ]
+
+
 def api_show_presentation(request, pk):
+    presentation = Presentation.objects.get(id=pk)
+    return JsonResponse(
+        presentation,
+        encoder=PresentationDetailEncoder,
+        safe=False,
+    )
     """
     Returns the details for the Presentation model specified
     by the pk parameter.
@@ -61,19 +79,3 @@ def api_show_presentation(request, pk):
         }
     }
     """
-    conference = Presentation.objects.get(id=pk)
-    return JsonResponse(
-        {
-            "presenter_name": conference.presenter_name,
-            "company_name": conference.company_name,
-            "presenter_email": conference.presenter_email,
-            "title": conference.title,
-            "synopsis": conference.synopsis,
-            "created": conference.created,
-            "status": conference.status,
-            "conference": {
-                "name": conference.name,
-                "href": conference.get_api_url(),
-            },
-        }
-    )
