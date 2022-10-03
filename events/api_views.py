@@ -19,6 +19,7 @@ class LocationDetailEncoder(ModelEncoder):
         "room_count",
         "created",
         "updated",
+        "state",
         "picture_url",
     ]
 
