@@ -34,6 +34,8 @@ class Location(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    picture_url = models.URLField(null=True)
+
     state = models.ForeignKey(
         State,
         related_name="+",  # do not create a related name on State
@@ -46,9 +48,8 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
-
-class Meta:
-    ordering = ("name",)  # Default ordering for Location
+    class Meta:
+        ordering = ("name",)  # Default ordering for Location
 
 
 class Conference(models.Model):

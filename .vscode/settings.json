@@ -5,5 +5,12 @@
   "editor.formatOnSave": true,
   "cSpell.words": [
     "PEXELS"
-  ]
+  ],
+  "nightlight.dayTheme": "High Tea",
+  "nightlight.quiet": true,
+  "nightlight.dayIconTheme": "Sweet vscode Icons",
+  "nightlight.nightIconTheme": "Sweet vscode Icons",
+  "nightlight.nightTheme": "August - Rosé Pine Moon",
+  "nightlight.gpsLat": 32.85222245367579,
+  "nightlight.gpsLong": -97.52962101349286
 }

@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = (
-    "django-insecure-&x3k-_j0yb7(ia@08np81rrs6elb*7m(pq5+l+7lv46rsl(^+v"
+    "django-insecure-#fr5&sy%3st-7_)bb07dp^sr82unah9tg7m!3l-r0bbyyx+d=&"
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -47,10 +47,13 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+CRONJOBS = [
+    ("* * * * *", "attendees.poll.get_conferences"),
 ]
 
 ROOT_URLCONF = "attendees_bc.urls"
@@ -125,7 +128,3 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-CRONJOBS = [
-    ("* * * * *", "attendees.poll.get_conferences"),
-]
